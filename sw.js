@@ -1,10 +1,19 @@
-/* Trove service worker — cache-first app shell for offline use. */
-const CACHE = 'trove-v1';
+/* Trove service worker — offline app shell.
+ *
+ * Bump VERSION whenever you change style.css or app.js, and update the matching
+ * ?v= on the <link>/<script> tags in index.html. Those two must move together.
+ *
+ * Cache strategy:
+ *   navigations  -> network-first (a deploy is live on the next launch; cache is the offline fallback)
+ *   everything else -> cache-first on an EXACT url match, which is safe because the
+ *                      asset urls carry ?v= and therefore change whenever the bytes change.
+ */
+const VERSION = '2';
+const CACHE = 'trove-v' + VERSION;
 const ASSETS = [
   './',
-  'index.html',
-  'style.css',
-  'app.js',
+  'style.css?v=' + VERSION,
+  'app.js?v=' + VERSION,
   'manifest.webmanifest',
   'icons/icon-180.png',
   'icons/icon-192.png',
@@ -12,7 +21,14 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      // {cache:'reload'} is load-bearing: without it these requests are answered by the
+      // browser's HTTP cache, which would freeze stale bytes into a freshly-named cache
+      // and — because reads below are cache-first — keep serving them indefinitely.
+      .then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {
@@ -24,20 +40,43 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+
+  // ---- navigations: network-first ----
+  if (req.mode === 'navigate' || req.destination === 'document') {
+    e.respondWith(
+      fetch(req, { cache: 'no-store' })
+        .then(res => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put('./', copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match('./').then(hit => hit || Response.error()))
+    );
+    return;
+  }
+
+  // ---- assets: cache-first, exact match ----
+  // NOTE: no {ignoreSearch:true} here. It would collapse "style.css?v=2" onto a cached
+  // "style.css?v=1" entry and silently undo the versioning above.
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(hit => {
+    caches.match(req).then(hit => {
       if (hit) return hit;
-      return fetch(e.request).then(res => {
-        // runtime-cache same-origin files and Google Fonts so the app works fully offline
-        const url = new URL(e.request.url);
-        const cacheable = res.ok || res.type === 'opaque';
-        if (cacheable && (url.origin === location.origin || url.hostname.endsWith('gstatic.com') || url.hostname.endsWith('googleapis.com'))) {
+      return fetch(req).then(res => {
+        const sameOrigin = url.origin === location.origin;
+        const isFont = url.hostname.endsWith('gstatic.com') || url.hostname.endsWith('googleapis.com');
+        if ((res.ok || res.type === 'opaque') && (sameOrigin || isFont)) {
           const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy));
+          caches.open(CACHE).then(c => c.put(req, copy));
         }
         return res;
-      }).catch(() => caches.match('index.html'));
+      });
+      // A miss while offline rejects, which surfaces as a normal network error.
+      // (The old code answered index.html here, handing HTML to <img> and <link> tags.)
     })
   );
 });
