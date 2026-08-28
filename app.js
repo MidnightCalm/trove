@@ -301,7 +301,7 @@ function tplHome() {
   return `<div class="screen home">
     <div class="wordmark-wrap">
       <div class="wordmark">Trove</div>
-      <div class="gold-rule"></div>
+      <div class="rule"></div>
       <div class="stats">${db.rooms.length} ROOMS · ${statBoxes} BOXES · ${statItems} ITEMS</div>
     </div>
     <div class="room-grid">
@@ -312,8 +312,8 @@ function tplHome() {
   </div>
   <div class="bottom-bar">
     <div class="search-pill" data-act="go-search"><div class="lens"></div><span class="hint">Search everything…</span></div>
-    <div class="fab purple" data-act="go-organize" title="Organize suggestions">✦${recCount > 0 ? `<span class="badge">${recCount}</span>` : ''}</div>
-    <div class="fab gold" data-act="add-room">＋</div>
+    <div class="fab secondary" data-act="go-organize" title="Organize suggestions">✦${recCount > 0 ? `<span class="badge">${recCount}</span>` : ''}</div>
+    <div class="fab primary" data-act="add-room">＋</div>
   </div>`;
 }
 
@@ -506,7 +506,7 @@ function tplOrganize() {
     <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:24px">
       <span class="section-label">BACKUP</span>
       <div class="btn-row" style="margin:0">
-        <div class="btn ghost-gold" data-act="export-data">Export backup</div>
+        <div class="btn ghost-accent" data-act="export-data">Export backup</div>
         <div class="btn ghost" data-act="import-data">Import</div>
       </div>
     </div>
@@ -523,8 +523,8 @@ function tplOverlays() {
     out += `<div class="menu-scrim" data-act="close-menu"></div>
     <div class="menu-sheet">
       <div class="m-title">${esc(title)}</div>
-      <div class="m-item gold" data-act="menu-rename">Rename</div>
-      <div class="m-item red" data-act="menu-delete">Delete</div>
+      <div class="m-item accent" data-act="menu-rename">Rename</div>
+      <div class="m-item danger" data-act="menu-delete">Delete</div>
       <div class="m-item dim" data-act="close-menu">Cancel</div>
     </div>`;
   }
@@ -572,13 +572,13 @@ function tplCamera() {
   let footer = '';
   if (isItem) {
     if (!c.shot && !c.err) footer = `<div class="shutter-row"><div class="shutter" data-act="cam-shoot"><div></div></div></div>
-      <div class="blink-note" style="animation:none;color:rgba(244,240,232,0.5)">Center the item, then tap the shutter</div>`;
+      <div class="hint-line">Center the item, then tap the shutter</div>`;
     if (c.shot || c.err) footer = `<div class="result-card">
       <div class="r-head"><span class="r-name">Name this item</span><span class="r-note">photo won’t be saved</span></div>
       <input id="cam-name" class="rename-input" placeholder="e.g. Clorox Wipes" autocomplete="off" value="${esc(c.name || '')}">
       <div class="btn-row">
         <div class="btn primary lg" data-act="cam-add">Add to box</div>
-        ${c.err ? '' : '<div class="btn ghost-gold lg" data-act="cam-retake">Retake</div>'}
+        ${c.err ? '' : '<div class="btn ghost-accent lg" data-act="cam-retake">Retake</div>'}
       </div>
     </div>`;
   } else {
@@ -619,17 +619,17 @@ function tplVoice() {
       ${v.interim ? `<div class="transcript">“${esc(v.interim)}”</div>` : ''}
       <div class="btn-row"><div class="btn ghost lg" data-act="voice-stop">Done</div></div>`;
   } else if (v.phase === 'typed') {
-    body = `<div class="transcript" style="font-style:normal;color:rgba(244,240,232,0.6);font-size:13px">Voice recognition isn’t available here — type what you’d say instead:</div>
+    body = `<div class="transcript sheet-note">Voice recognition isn’t available here — type what you’d say instead:</div>
       <input id="voice-typed" class="rename-input" placeholder="e.g. two bottles of bleach and three AA batteries" autocomplete="off" value="${esc(v.typed || '')}">
       <div class="btn-row"><div class="btn primary lg" data-act="voice-parse-typed">Parse items</div></div>`;
   } else if (v.phase === 'parsed') {
     const count = v.items.reduce((a, i) => a + i.qty, 0);
     body = `<div class="transcript">“${esc(v.transcript)}”</div>
       ${v.items.length ? `<div class="voice-chips">${v.items.map(i => `
-        <div class="voice-chip"><span class="vqty">×${i.qty}</span><span class="vlabel">${esc(i.name)}${i.brand ? ' — ' + esc(i.brand) : ''}</span></div>`).join('')}</div>` : '<div class="transcript" style="font-style:normal;color:rgba(244,240,232,0.5)">Couldn’t pick out any items.</div>'}
+        <div class="voice-chip"><span class="vqty">×${i.qty}</span><span class="vlabel">${esc(i.name)}${i.brand ? ' — ' + esc(i.brand) : ''}</span></div>`).join('')}</div>` : '<div class="transcript sheet-note">Couldn’t pick out any items.</div>'}
       <div class="btn-row">
         ${v.items.length ? `<div class="btn primary lg" data-act="voice-add-all">Add ${count} ${count === 1 ? 'item' : 'items'}</div>` : ''}
-        <div class="btn ghost-gold lg" data-act="voice-retry">Say it again</div>
+        <div class="btn ghost-accent lg" data-act="voice-retry">Say it again</div>
       </div>`;
   }
   return `<div class="sheet-scrim" data-act="close-voice-scrim">

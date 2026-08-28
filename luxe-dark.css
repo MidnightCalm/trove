@@ -1,0 +1,60 @@
+/* ============================================================
+   LUXE DARK — personal design tokens for Myron
+   Black body · blue-leaning purple + gold accents · "ghost paint"
+   glowing purple edges on raised surfaces.
+
+   Drop this file into any web project (or hand it to Claude) and
+   style components against the custom properties, not raw hex.
+   First applied: Solar GCR Calculator artifact (July 2026).
+   ============================================================ */
+
+:root[data-theme="luxe-dark"], .luxe-dark {
+  color-scheme: dark;
+
+  /* Grounds — purple-biased near-blacks */
+  --lx-bg:        #0A090D;   /* page */
+  --lx-surface:   #121016;   /* cards, panels */
+  --lx-surface-2: #191521;   /* hover / inset */
+
+  /* Ink */
+  --lx-ink:       #EDEAF4;   /* primary text */
+  --lx-ink-2:     #B3ADC4;   /* secondary text */
+  --lx-muted:     #857F96;   /* captions, axis labels */
+
+  /* Purple — blue-leaning (violet/indigo, not magenta) */
+  --lx-purple:       #9D8CFF;              /* interactive accent, links, focus */
+  --lx-purple-deep:  #7B61FF;              /* pressed / vivid moments */
+  --lx-purple-soft:  rgba(125, 97, 255, 0.18);  /* selection wash */
+
+  /* Gold — headline numbers, highlights, data series */
+  --lx-gold:        #E4B54A;   /* hero figures, key highlights */
+  --lx-gold-series: #D9A93F;   /* chart lines/marks on dark surface */
+
+  /* Hairlines & chart chrome */
+  --lx-line: #262130;
+  --lx-grid: #1D1926;
+  --lx-axis: #37304A;
+
+  /* Ghost paint — the glowing purple edge */
+  --lx-ghost-border: 1px solid rgba(147, 124, 255, 0.30);
+  --lx-ghost-glow:   0 0 0 1px rgba(147, 124, 255, 0.05),
+                     0 0 22px rgba(124, 92, 255, 0.16),
+                     0 6px 22px rgba(0, 0, 0, 0.55);
+  --lx-ghost-sheen:  linear-gradient(180deg, rgba(124, 92, 255, 0.06), transparent 42%);
+}
+
+/* Reference component: a ghost-paint card */
+.luxe-dark .card, .lx-card {
+  background: var(--lx-ghost-sheen), var(--lx-surface);
+  border: var(--lx-ghost-border);
+  border-radius: 10px;
+  box-shadow: var(--lx-ghost-glow);
+  color: var(--lx-ink);
+}
+
+/* Usage notes
+   - Purple is for what you TOUCH (buttons, sliders, focus, selection).
+   - Gold is for what you READ (hero numbers, key stats, chart series).
+   - Keep body text in --lx-ink/--lx-ink-2, never in an accent colour.
+   - Gold on --lx-surface ≈ 7.9:1 contrast; purple ≈ 5:1 — both pass
+     for large text and UI accents. Body text stays in ink tokens.   */

@@ -8,10 +8,11 @@
  *   everything else -> cache-first on an EXACT url match, which is safe because the
  *                      asset urls carry ?v= and therefore change whenever the bytes change.
  */
-const VERSION = '2';
+const VERSION = '3';
 const CACHE = 'trove-v' + VERSION;
 const ASSETS = [
   './',
+  'luxe-dark.css?v=' + VERSION,
   'style.css?v=' + VERSION,
   'app.js?v=' + VERSION,
   'manifest.webmanifest',
